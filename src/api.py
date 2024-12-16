@@ -1,6 +1,4 @@
 import requests
-#from fastapi import UploadFile, File, Depends
-import os
 
 BASE_URL = "http://localhost:8000"
 
@@ -20,14 +18,11 @@ def login():
     ACCESS_TOKEN.access_token = result['access_token']
     ACCESS_TOKEN.token_type = result['token_type']
 
-def visitCreate(visit: Visit):
-    employee_id = visit.employee_id
-    event_id = visit.event_id
-
+def visitCreate(employee_id:str, event_id: str):
     result = requests.post(BASE_URL + "/visit", {'employee_id': employee_id, 'event_id': event_id}, headers={"Authorization" : f"Bearer {ACCESS_TOKEN.access_token}"}).json()
     if (result.status_code == 401):
         login()
-        visitCreate(visit)
+        visitCreate(employee_id, event_id)
 
     return result['visit_id']
 
@@ -48,3 +43,4 @@ def downloadVideo(event_id: str):
 
     with open('src/videos', "wb") as path:
         path.write(result)
+

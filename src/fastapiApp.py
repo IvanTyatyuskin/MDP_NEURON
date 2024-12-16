@@ -3,8 +3,10 @@ import datetime
 import uvicorn as uvicorn
 from pydantic import BaseModel, ConfigDict
 from fastapi import FastAPI
-from src.api import downloadVideo
+from api import downloadVideo
+from neuron import startNeuralNetwork
 import os
+import glob
 import shutil
 
 class Biometrics(BaseModel):
@@ -35,10 +37,13 @@ def createFacesDataset(facesArray: list[Biometrics]):
 
 @app.post("/startAI")
 def start(user: StartAIModel):
+    createFacesDataset(user.biometrics)
     downloadVideo(user.event_id)
-    #раскидать биометрию
-    #запуск нейронки с передачей биометрии
 
+    list_of_files = glob.glob('src/videos/*.mp4')
+    latest_file = max(list_of_files, key=os.path.getctime)
+
+    startNeuralNetwork(latest_file, user.event_id)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", reload=True)
